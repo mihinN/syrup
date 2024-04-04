@@ -321,7 +321,7 @@ int main(int argc,char** argv) {
     ",
     Number, Symbol, Expr, Syrup);
 
-	puts("Syrup Version 0.0.0.2");
+	puts("Syrup Version 1.1");
 	puts("Press Ctrl+c to Exit \n");
 
 	while(1){
