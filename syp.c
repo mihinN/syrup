@@ -14,12 +14,16 @@
 #include "mpc.h"
 
 /* if we are compiling on Windows */
+
 #ifdef _WIN32
 #include <string.h>
 
 static char buffer[2048];
+
 /* Fake readline function */
-char* readline(char* prompt){
+
+char* readline(char* prompt) {
+
 	fputs(prompt,stdout);
 	fgets(buffer,2048,stdin);
 	char* cpy = malloc(strlen(buffer)+1);
@@ -30,7 +34,7 @@ char* readline(char* prompt){
 
 /* Fake add history function */
 
-void add_history(char* unused){
+void add_history(char* unused) {
 }
 #else
 #include <readline/readline.h>
@@ -39,28 +43,32 @@ void add_history(char* unused){
 #endif
 /* Create enumeration of possible Error types */
 
-enum { LERR_DIV_ZERO , LERR_BAD_OP, LERR_BAD_NUM};
+enum { LERR_DIV_ZERO , LERR_BAD_OP, LERR_BAD_NUM };
 
 /* Create Enumiration of possible lval types */
 
-enum {LVAL_NUM,LVAL_ERR,LVAL_SYM,LVAL_SEXPR};
+enum { LVAL_NUM,LVAL_ERR,LVAL_SYM,LVAL_SEXPR };
 
 /* Declare new lval struct */
 
-typedef struct lval{
+typedef struct lval {
+
 	int type;
 	long num;
 	char* err;
 	char* sym;
+
 	/* count and pointer to the List  of "lval" */
+	
 	int count;
 	struct lval** cell;
 
-}lval;
+} lval;
 
 /* Create new number type lval */
 
-lval* lval_num(long x){
+lval* lval_num(long x) {
+
 	lval* v = malloc(sizeof(lval));
 	v->type = LVAL_NUM;
 	v->num = x;
@@ -68,7 +76,9 @@ lval* lval_num(long x){
 }
 
 /* construct a pointer to a new Error lval  */
+
 lval* lval_err(char* m) {
+
   lval* v = malloc(sizeof(lval));
   v->type = LVAL_ERR;
   v->err = malloc(strlen(m)+1);
@@ -78,7 +88,8 @@ lval* lval_err(char* m) {
 
 /* construct a pointer to an new symbol lval */
 
-lval* lval_sym(char* s){
+lval* lval_sym(char* s) {
+
 	lval* v = malloc(sizeof(lval));
 	v->type = LVAL_SYM;
 	v->sym = malloc(strlen(s)+1);
@@ -87,7 +98,8 @@ lval* lval_sym(char* s){
 }
 
 /* Pointer to a new empty Sub EXPR lval */
-lval* lval_sexpr(void){
+lval* lval_sexpr(void) {
+
 	lval* v = malloc(sizeof(lval));
 	v->type = LVAL_SEXPR;
 	v->count = 0;
@@ -119,14 +131,14 @@ void lval_del(lval* v){
 
 }
 
-lval* lval_add(lval* v,lval* x){
+lval* lval_add(lval* v,lval* x) {
 	v->count++;
 	v->cell = realloc(v->cell,sizeof(lval*)*v->count);
 	v->cell[v->count-1]=x;
 	return v;
 }
 
-lval* lval_pop(lval* v,int i){
+lval* lval_pop(lval* v,int i) {
 	/* Find the item at "i" */
 	lval* x = v->cell[i];
 	/* Shift mempry after the item at "i" overthe top */
@@ -138,7 +150,7 @@ lval* lval_pop(lval* v,int i){
 	return x;
 }
 
-lval* lval_take(lval* v,int i){
+lval* lval_take(lval* v,int i) {
 	lval* x = lval_pop(v,i);
 	lval_del(v);
 	return x;
@@ -146,7 +158,7 @@ lval* lval_take(lval* v,int i){
 
 void lval_print(lval* v);
 
-void lval_expr_print(lval* v,char open,char close){
+void lval_expr_print(lval* v,char open,char close) {
 	putchar(open);
 	for(int i=0;i<v->count;i++){
 		/* Print value contained within */
@@ -171,13 +183,13 @@ void lval_print(lval* v) {
 
 /* Print an "lval" Followed by New Line */
 
-void lval_println(lval* v){lval_print(v);putchar('\n');}
+void lval_println(lval* v) {	lval_print(v);putchar('\n');	}
 
 /* Lval buitin op*/
-lval* builtin_op(lval* a,char* op){
+lval* builtin_op(lval* a,char* op) {
 	/* Ensure all arguents are numbers */
-	for(int i=0;i<a->count;i++){
-		if(a->cell[i]->type != LVAL_NUM){
+	for(int i=0;i<a->count;i++) {
+		if(a->cell[i]->type != LVAL_NUM) {
 			lval_del(a);
 			return lval_err("Cannot Operate on NON numbers \n");
 		}
@@ -214,6 +226,7 @@ lval* builtin_op(lval* a,char* op){
 }
 
 lval* lval_eval(lval* v);
+
 lval* lval_eval_sexpr(lval* v){
 	/* Evalute Children */
 	for (int i=0;i<v->count;i++){
@@ -288,13 +301,17 @@ lval* lval_read(mpc_ast_t* t) {
 }
 
 
-int main(int argc,char** argv){
+int main(int argc,char** argv) {
+
 	/* Create some parser */
+
 	mpc_parser_t* Number = mpc_new("number");
 	mpc_parser_t* Symbol = mpc_new("symbol");
 	mpc_parser_t* Expr = mpc_new("expr");
 	mpc_parser_t* Syrup = mpc_new("syrup");
+
 	/* Define them with the folowing Language */
+
  mpca_lang(MPCA_LANG_DEFAULT,
     "                                                     \
       number   : /-?[0-9]+/ ;                             \
@@ -306,6 +323,7 @@ int main(int argc,char** argv){
 
 	puts("Syrup Version 0.0.0.2");
 	puts("Press Ctrl+c to Exit \n");
+
 	while(1){
 		char* input = readline("Syrup> ");
 		add_history(input);
@@ -328,4 +346,3 @@ int main(int argc,char** argv){
 	return 0;
   
 }
-
